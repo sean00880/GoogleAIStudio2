@@ -13,11 +13,17 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    session: ({ session, user }) => {
-      if (session?.user && user) {
-        (session.user as any).id = user.id
+    session: ({ session, token }) => {
+      if (session?.user && token) {
+        (session.user as any).id = token.sub
       }
       return session
+    },
+    jwt: ({ token, user }) => {
+      if (user) {
+        token.sub = user.id
+      }
+      return token
     },
   },
   pages: {
@@ -25,6 +31,6 @@ export const authOptions: NextAuthOptions = {
     error: "/auth/error",
   },
   session: {
-    strategy: "database",
+    strategy: "jwt",
   },
 }
