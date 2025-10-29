@@ -32,7 +32,7 @@ export async function PUT(
       include: { project: true },
     })
 
-    if (!file || file.project.userId !== (session.user as any)?.id) {
+    if (!file || file.project.userId !== session.user.id) {
       return NextResponse.json(
         { error: "File not found" },
         { status: 404 }
@@ -71,7 +71,7 @@ export async function DELETE(
       include: { project: true },
     })
 
-    if (!file || file.project.userId !== (session.user as any)?.id) {
+    if (!file || file.project.userId !== session.user.id) {
       return NextResponse.json(
         { error: "File not found" },
         { status: 404 }

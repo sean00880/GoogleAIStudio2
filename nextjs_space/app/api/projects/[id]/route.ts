@@ -27,7 +27,7 @@ export async function GET(
     const project = await db.project.findUnique({
       where: {
         id: params.id,
-        userId: (session.user as any)?.id,
+        userId: session.user.id,
       },
       include: {
         files: {
@@ -77,7 +77,7 @@ export async function PUT(
     const project = await db.project.update({
       where: {
         id: params.id,
-        userId: (session.user as any)?.id,
+        userId: session.user.id,
       },
       data: validatedData,
       include: {
@@ -110,7 +110,7 @@ export async function DELETE(
     await db.project.delete({
       where: {
         id: params.id,
-        userId: (session.user as any)?.id,
+        userId: session.user.id,
       },
     })
 

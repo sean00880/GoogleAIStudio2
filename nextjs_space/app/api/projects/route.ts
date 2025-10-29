@@ -23,7 +23,7 @@ export async function GET() {
 
     const projects = await db.project.findMany({
       where: {
-        userId: (session.user as any)?.id,
+        userId: session.user.id,
       },
       orderBy: {
         updatedAt: 'desc',
@@ -57,13 +57,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const userId = session.user.id
     const body = await request.json()
     const validatedData = createProjectSchema.parse(body)
 
     const project = await db.project.create({
       data: {
         ...validatedData,
-        userId: (session.user as any)?.id,
+        userId,
       },
       include: {
         files: true,

@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const project = await db.project.findUnique({
       where: {
         id: validatedData.projectId,
-        userId: (session.user as any)?.id,
+        userId: session.user.id,
       },
     })
 

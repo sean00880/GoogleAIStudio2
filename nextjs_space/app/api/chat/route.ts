@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (false) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     const project = await db.project.findUnique({
       where: {
         id: projectId,
-        userId: (session.user as any)?.id,
+        userId: session.user.id,
       },
       include: {
         chatMessages: {

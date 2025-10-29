@@ -14,7 +14,7 @@ export default async function AppPage() {
   // Get user's projects
   const projects = await db.project.findMany({
     where: {
-      userId: (session.user as any)?.id,
+      userId: session.user.id,
     },
     orderBy: {
       updatedAt: 'desc',
