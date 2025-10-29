@@ -1,116 +1,97 @@
-# Vercel Environment Variables Configuration Summary
 
-## ✅ Configuration Completed Successfully
+# Vercel Environment Configuration Summary
 
-All environment variables have been successfully configured on Vercel for the **production** environment.
+## ⚠️ CRITICAL: You MUST configure these environment variables in Vercel
 
----
+The OAuth callback error is happening because **environment variables are missing or incorrectly set in Vercel**.
 
-## 📋 Configured Environment Variables
+### Step-by-Step Fix:
 
-### 1. **DATABASE_URL**
-- **Description**: PostgreSQL database connection string for Abacus.AI hosted database
-- **Status**: ✅ Configured
-- **Environment**: Production
-
-### 2. **NEXTAUTH_SECRET**
-- **Description**: Secret key for NextAuth.js session encryption
-- **Status**: ✅ Configured
-- **Environment**: Production
-
-### 3. **ABACUSAI_API_KEY**
-- **Description**: API key for Abacus.AI platform integration
-- **Status**: ✅ Configured
-- **Environment**: Production
-
-### 4. **NEXT_PUBLIC_SUPABASE_URL**
-- **Description**: Public Supabase project URL
-- **Value**: `https://mbbvmtspkotbamorqkml.supabase.co`
-- **Status**: ✅ Configured
-- **Environment**: Production
-- **Note**: Publicly exposed (NEXT_PUBLIC_ prefix)
-
-### 5. **NEXT_PUBLIC_SUPABASE_ANON_KEY**
-- **Description**: Public anonymous key for Supabase client
-- **Status**: ✅ Configured
-- **Environment**: Production
-- **Note**: Publicly exposed (NEXT_PUBLIC_ prefix)
-
-### 6. **SUPABASE_SERVICE_ROLE_KEY**
-- **Description**: Service role key for Supabase admin operations
-- **Status**: ✅ Configured
-- **Environment**: Production
-- **Note**: Secret key - server-side only
-
-### 7. **NEXTAUTH_URL**
-- **Description**: Base URL for NextAuth.js authentication callbacks
-- **Value**: `https://nextjsspace-seans-projects-eadbd219.vercel.app`
-- **Status**: ✅ Configured
-- **Environment**: Production
-- **Note**: Updated from localhost to production Vercel URL
-
-### 8. **GOOGLE_CLIENT_ID**
-- **Description**: Google OAuth 2.0 client ID for Sign in with Google
-- **Status**: ✅ Configured
-- **Environment**: Production
-
-### 9. **GOOGLE_CLIENT_SECRET**
-- **Description**: Google OAuth 2.0 client secret
-- **Status**: ✅ Configured
-- **Environment**: Production
+1. **Go to Vercel Dashboard**: https://vercel.com/dashboard
+2. **Select your project**: `google-ai-studio2`
+3. **Go to**: Settings → Environment Variables
+4. **Add/Update these variables**:
 
 ---
 
-## 🔐 Security Notes
+### Required Environment Variables:
 
-- All environment variables are **encrypted** on Vercel
-- Values are only accessible during build and runtime
-- Sensitive keys (DATABASE_URL, NEXTAUTH_SECRET, API keys) are never exposed to the client
-- Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser
-
----
-
-## 🌐 Production URLs
-
-- **Primary Production URL**: `https://nextjsspace-seans-projects-eadbd219.vercel.app`
-- **Latest Deployment**: `https://nextjsspace-gjrqb20am-seans-projects-eadbd219.vercel.app`
-
----
-
-## 🎯 Next Steps
-
-1. **Redeploy the Application**: The environment variables will take effect on the next deployment
-   ```bash
-   npx vercel --prod --token ZMnDrh84StlpksMxR7iFdrcS
-   ```
-
-2. **Update Google OAuth Settings**: 
-   - Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-   - Update the **Authorized redirect URIs** to include:
-     - `https://nextjsspace-seans-projects-eadbd219.vercel.app/api/auth/callback/google`
-   - Update the **Authorized JavaScript origins** to include:
-     - `https://nextjsspace-seans-projects-eadbd219.vercel.app`
-
-3. **Test the Deployment**: Visit the production URL and test:
-   - Google Sign-in functionality
-   - Database connectivity
-   - Abacus.AI API integration
-   - Supabase features
-
----
-
-## 📊 Verification Command
-
-To verify the environment variables at any time:
-```bash
-npx vercel env ls production --token ZMnDrh84StlpksMxR7iFdrcS
+#### 1. NEXTAUTH_URL (MUST CHANGE)
 ```
+https://google-ai-studio2.vercel.app
+```
+⚠️ **NOT** `http://localhost:3000` - use the production domain!
+
+#### 2. NEXTAUTH_SECRET
+```
+xL6J2k+ISRAKjKRJp516TP7gjhkD9UcgDBt7cXMxzhQ=
+```
+⚠️ Copy this EXACTLY as shown above
+
+#### 3. DATABASE_URL
+```
+postgresql://role_1691fe1a06:plDusYQqd8Y_46dl32y6aN94CD5B47tb@db-1691fe1a06.db002.hosteddb.reai.io:5432/1691fe1a06
+```
+⚠️ Copy this EXACTLY as shown above
+
+#### 4. GOOGLE_CLIENT_ID
+```
+965990089842-q5k43c0u43ipe4itedrnhmqr3edh3ikc.apps.googleusercontent.com
+```
+⚠️ This is your actual Client ID (the one you provided earlier)
+
+#### 5. GOOGLE_CLIENT_SECRET
+```
+[Use the Client Secret you have from Google Cloud Console]
+```
+⚠️ Get this from https://console.cloud.google.com → APIs & Services → Credentials
 
 ---
 
-## 📝 Configuration Date
+### Important Notes:
 
-**Configured on**: Wednesday, October 29, 2025  
-**Total Environment Variables**: 9  
-**Project**: seans-projects-eadbd219/nextjs_space  
-**Status**: All variables successfully configured ✅
+1. **For EACH variable**: 
+   - Click "Add New" in Vercel
+   - Paste the variable name
+   - Paste the value
+   - Check all 3 boxes: Production, Preview, Development
+   - Click "Save"
+
+2. **After adding all variables**:
+   - Go to "Deployments" tab
+   - Find the latest deployment
+   - Click the 3 dots menu
+   - Click "Redeploy"
+   - Wait for deployment to complete
+
+3. **The most common cause of callback errors**:
+   - Missing `NEXTAUTH_SECRET` in Vercel
+   - Wrong `NEXTAUTH_URL` (using localhost instead of production domain)
+   - Missing `DATABASE_URL` 
+
+---
+
+### Verification Checklist:
+
+After setting all variables and redeploying:
+
+- [ ] NEXTAUTH_URL = `https://google-ai-studio2.vercel.app` (NOT localhost)
+- [ ] NEXTAUTH_SECRET is set
+- [ ] DATABASE_URL is set
+- [ ] GOOGLE_CLIENT_ID is set
+- [ ] GOOGLE_CLIENT_SECRET is set
+- [ ] All variables are checked for all 3 environments
+- [ ] Application has been redeployed
+- [ ] Google Cloud Console has redirect URI: `https://google-ai-studio2.vercel.app/api/auth/callback/google`
+
+---
+
+### Test After Configuration:
+
+1. Wait for Vercel deployment to complete (check Deployments tab)
+2. Visit: https://google-ai-studio2.vercel.app
+3. Click "Continue with Google"
+4. Sign in with Google
+5. ✅ Should redirect to /app successfully
+
+If you still see the callback error after following these steps, there may be a database connection issue. Check Vercel deployment logs for specific error messages.
