@@ -63,8 +63,10 @@ export async function POST(request: NextRequest) {
 
     const project = await db.project.create({
       data: {
-        ...validatedData,
         userId,
+        name: validatedData.name,
+        description: validatedData.description,
+        githubRepoUrl: validatedData.githubRepoUrl,
       },
       include: {
         files: true,
