@@ -14,13 +14,29 @@ export default function AuthErrorPage() {
   const getErrorMessage = (error: string | null) => {
     switch (error) {
       case 'Configuration':
-        return 'There is a problem with the server configuration.'
+        return 'There is a problem with the server configuration. Please check environment variables.'
       case 'AccessDenied':
         return 'Access denied. You do not have permission to access this application.'
       case 'Verification':
         return 'The verification token has expired or has already been used.'
+      case 'Callback':
+        return 'OAuth callback failed. This may be due to missing environment variables (NEXTAUTH_SECRET, DATABASE_URL) or database connection issues. Please check Vercel environment variables.'
+      case 'OAuthSignin':
+        return 'Error constructing OAuth request. Check Google OAuth credentials.'
+      case 'OAuthCallback':
+        return 'Error handling OAuth callback. Check redirect URIs in Google Cloud Console.'
+      case 'OAuthCreateAccount':
+        return 'Could not create account. Check database connection and Prisma schema.'
+      case 'EmailCreateAccount':
+        return 'Could not create account with email.'
+      case 'Signin':
+        return 'Error signing in. Please try again.'
+      case 'OAuthAccountNotLinked':
+        return 'Email already exists with a different provider.'
+      case 'SessionRequired':
+        return 'Please sign in to access this page.'
       default:
-        return 'An unknown authentication error occurred.'
+        return `An authentication error occurred${error ? `: ${error}` : '.'}`
     }
   }
 
