@@ -43,6 +43,8 @@ const chatRequestSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  let modelConfig: any = null
+  
   try {
     const session = await getServerSession(authOptions)
     
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
     const { projectId, message, model: modelId, temperature, maxTokens } = validation.data
 
     // Get and validate model configuration
-    const modelConfig = getModelById(modelId)
+    modelConfig = getModelById(modelId)
     if (!modelConfig) {
       return NextResponse.json(
         { error: `Model not found: ${modelId}`, available: "Check /api/models for available models" },
@@ -157,12 +159,13 @@ Please provide helpful assistance for the user's request.`
       },
     ]
 
-    // Call AI provider with streaming
+    // Call AI provider with streaming (pass userId for user-specific API keys)
     const stream = await streamChat({
       model: modelId,
       messages,
       temperature: temperature ?? 0.7,
       maxTokens: maxTokens ?? modelConfig.maxOutput,
+      userId: session.user.id,
     })
 
     // Track full response for database storage
@@ -222,6 +225,21 @@ Please provide helpful assistance for the user's request.`
 
   } catch (error: any) {
     console.error('Error in chat API:', error)
+    
+    // Handle APIKeyMissingError - user needs to add API key
+    if (error.name === 'APIKeyMissingError') {
+      return NextResponse.json(
+        {
+          error: "API_KEY_MISSING",
+          provider: error.provider || modelConfig?.provider,
+          requiredKey: error.requiredKey,
+          website: error.website,
+          details: error.message,
+          hint: "Add your API key in settings to use this model"
+        },
+        { status: 402 } // 402 Payment Required (API key needed)
+      )
+    }
     
     // Provide helpful error messages
     if (error.message?.includes('API key not found') || error.message?.includes('not found in environment')) {

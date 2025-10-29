@@ -351,4 +351,4 @@ static getNewProvider() {
 
 ## Examples
 
-See the research file at `~/ai_research_2025.md` for comprehensive code examples and implementation patterns.
+See additional research files for comprehensive code examples and implementation patterns.

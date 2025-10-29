@@ -2,14 +2,16 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Project, ChatMessage, AI_MODELS } from '@/lib/types'
+import { Project, ChatMessage } from '@/lib/types'
+import { ALL_MODELS, MODEL_CATEGORIES, AIProvider } from '@/lib/ai-models'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { MessageList } from './message-list'
-import { Send, Bot, Zap, MessageSquare } from 'lucide-react'
+import { APIKeyModal } from '@/components/modals/api-key-modal'
+import { Send, Bot, Zap, MessageSquare, Star, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 
@@ -20,9 +22,11 @@ interface ChatInterfaceProps {
 export function ChatInterface({ activeProject }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
-  const [selectedModel, setSelectedModel] = useState('gpt-4')
+  const [selectedModel, setSelectedModel] = useState('gemini-2.5-pro') // Default to Gemini 2.5 Pro (#1 on LMArena)
   const [isLoading, setIsLoading] = useState(false)
   const [streamingMessage, setStreamingMessage] = useState('')
+  const [showAPIKeyModal, setShowAPIKeyModal] = useState(false)
+  const [missingKeyProvider, setMissingKeyProvider] = useState<AIProvider | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Load messages when project changes
@@ -69,8 +73,24 @@ export function ChatInterface({ activeProject }: ChatInterfaceProps) {
         }),
       })
 
+      // Handle API key missing error
+      if (response.status === 402) {
+        const errorData = await response.json()
+        if (errorData.error === 'API_KEY_MISSING') {
+          // Get the model config to find the provider
+          const modelConfig = ALL_MODELS.find(m => m.id === selectedModel)
+          if (modelConfig) {
+            setMissingKeyProvider(modelConfig.provider)
+            setShowAPIKeyModal(true)
+          }
+          toast.error('API key required for this model')
+          return
+        }
+      }
+
       if (!response.ok) {
-        throw new Error('Failed to send message')
+        const errorData = await response.json()
+        throw new Error(errorData.details || 'Failed to send message')
       }
 
       // Handle streaming response
@@ -99,9 +119,9 @@ export function ChatInterface({ activeProject }: ChatInterfaceProps) {
 
       setMessages(prev => [...prev, assistantMessage])
       setStreamingMessage('')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error)
-      toast.error('Failed to send message')
+      toast.error(error.message || 'Failed to send message')
     } finally {
       setIsLoading(false)
     }
@@ -146,20 +166,29 @@ export function ChatInterface({ activeProject }: ChatInterfaceProps) {
           </div>
 
           <Select value={selectedModel} onValueChange={setSelectedModel}>
-            <SelectTrigger className="w-48 bg-slate-700 border-slate-600 text-white">
+            <SelectTrigger className="w-64 bg-slate-700 border-slate-600 text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              {AI_MODELS.map((model) => (
-                <SelectItem key={model.id} value={model.id}>
-                  <div className="flex items-center space-x-2">
-                    <Zap className="h-3 w-3" />
-                    <span>{model.name}</span>
-                    <span className="text-xs text-gray-400">
-                      ({model.provider})
-                    </span>
-                  </div>
-                </SelectItem>
+            <SelectContent className="max-h-[500px]">
+              {Object.entries(MODEL_CATEGORIES).map(([key, category]) => (
+                <SelectGroup key={key}>
+                  <SelectLabel className="flex items-center space-x-2 text-purple-400">
+                    {key === 'flagship' && <Star className="h-3 w-3" />}
+                    {key === 'fast' && <Zap className="h-3 w-3" />}
+                    {key === 'specialized' && <Sparkles className="h-3 w-3" />}
+                    <span>{category.label}</span>
+                  </SelectLabel>
+                  {category.models.map((model) => (
+                    <SelectItem key={model.id} value={model.id}>
+                      <div className="flex items-center justify-between space-x-3 w-full">
+                        <span className="font-medium">{model.name}</span>
+                        <span className="text-xs text-gray-400 capitalize">
+                          {model.provider}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               ))}
             </SelectContent>
           </Select>
@@ -249,6 +278,26 @@ export function ChatInterface({ activeProject }: ChatInterfaceProps) {
           </Button>
         </div>
       </motion.div>
+
+      {/* API Key Modal */}
+      {missingKeyProvider && (
+        <APIKeyModal
+          open={showAPIKeyModal}
+          onOpenChange={setShowAPIKeyModal}
+          provider={missingKeyProvider}
+          onKeySaved={() => {
+            toast.success('API key saved! You can now use this model.')
+            // Retry the last message
+            if (input.trim()) {
+              sendMessage()
+            }
+          }}
+          onSwitchModel={() => {
+            // Open model selector (user can manually select a different model)
+            toast.info('Please select a different model')
+          }}
+        />
+      )}
     </div>
   )
 }
