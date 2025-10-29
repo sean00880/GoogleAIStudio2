@@ -6,13 +6,14 @@ import { db } from "./db"
 
 // Determine base URL for OAuth callbacks
 function getBaseUrl() {
-  // For Vercel deployments
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`
-  }
-  // For custom NEXTAUTH_URL
+  // CRITICAL: Prioritize NEXTAUTH_URL to ensure consistent OAuth callbacks
+  // This prevents preview deployment URLs from being used as callback URLs
   if (process.env.NEXTAUTH_URL) {
     return process.env.NEXTAUTH_URL
+  }
+  // For Vercel production deployments without explicit NEXTAUTH_URL
+  if (process.env.VERCEL_ENV === 'production' && process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
   }
   // Default to localhost in development
   return 'http://localhost:3000'
@@ -50,16 +51,21 @@ export const authOptions: NextAuthOptions = {
       if (url.startsWith("/")) {
         return `${actualBaseUrl}${url}`
       }
+      
       // Allows callback URLs on the same origin
       try {
         const urlObj = new URL(url)
         const baseUrlObj = new URL(actualBaseUrl)
-        if (urlObj.origin === baseUrlObj.origin) {
-          return url
+        
+        // If the URL is on our domain, preserve the path but use our base
+        if (urlObj.hostname.includes('vercel.app') || urlObj.origin === baseUrlObj.origin) {
+          // Extract path and redirect to our production domain
+          return `${actualBaseUrl}${urlObj.pathname}${urlObj.search}${urlObj.hash}`
         }
       } catch (e) {
         // Invalid URL, fall through to default
       }
+      
       // Default to app page after successful sign in
       return `${actualBaseUrl}/app`
     },
